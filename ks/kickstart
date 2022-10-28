@@ -1,0 +1,54 @@
+#version=RHEL8
+# Use graphical install
+graphical
+
+
+%packages
+@^minimal-environment
+rng-tools
+%end
+
+services --enabled=sshd,rngd
+
+%post
+echo "Current IP address: \4 \n" >> /etc/issue
+dnf -y install epel-release python3
+%end
+
+keyboard --xlayouts='us','ru' --switch='grp:ctrl_shift_toggle'
+lang en_US.UTF-8
+timezone Europe/Moscow --isUtc --ntpservers=pool.ntp.org,pool.ntp.org,pool.ntp.org,pool.ntp.org
+
+network  --bootproto=dhcp --ipv6=auto --activate
+network  --hostname=alma.autovm
+
+url --mirrorlist="https://mirrors.almalinux.org/mirrorlist/8.6/baseos"
+
+firstboot --enable
+ignoredisk --only-use=sda
+bootloader --location=mbr --boot-drive=sda --append="transparent_hugepage=never"
+clearpart --all --initlabel
+
+part /boot/efi --fstype="efi" --ondisk=sda --size=512 --fsoptions="umask=0077,shortname=winnt"
+part /boot --fstype="xfs" --ondisk=sda --size=512
+part swap --fstype="swap" --ondisk=sda --size=512
+part / --fstype="xfs" --ondisk=sda --grow
+
+
+# Root password 11111, user 111
+rootpw --iscrypted $6$6Qwnw3.v3f59pVBt$HzKTmn60ThH1BYk0cym12hJMeLMUlO7hy92F7RhX5.md6xogD.qaxr0/yKy.XZJslD.flczfZ4wgrDuxlE9S2.
+user --groups=wheel --name=me --password=$6$tGfS0iHp1uZ82eiY$rU/rJgKrC/dRMaNXrFjdcMWJfppwODxPd50IHD32rDLZnOAoWYfk5Hkka1i9wUUwgA7NDUoEzJAbK7QRscEzI/ --iscrypted --gecos="me"
+
+
+selinux --disabled
+
+reboot --eject
+
+%addon com_redhat_kdump --disable --reserve-mb='auto'
+%end
+
+%anaconda
+pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
+pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+%end
