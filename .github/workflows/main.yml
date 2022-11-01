@@ -1,0 +1,16 @@
+name: Build Kickstart ISO
+
+on:
+  push:
+  workflow_dispatch:
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+  steps:
+
+  - name: Check out the repo
+    uses: actions/checkout@v3
+    
+  - name: Make ISO
+    run: mkisofs -V "OEMDRV" -o kickstarter.iso ./ks
