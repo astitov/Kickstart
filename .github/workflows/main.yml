@@ -10,9 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    
+    - name: Install mkisofs
+      run: apt-get update && apt-get upgrade && apt-get -y install mkisofs
 
     - name: Check out the repo
       uses: actions/checkout@v3
     
     - name: Make ISO
-      run: mkisofs -V "OEMDRV" -o kickstarter.iso ./ks
+      run: mkisofs -V "OEMDRV" -o kickstarter-$GITHUB_RUN_ID.iso ./ks
